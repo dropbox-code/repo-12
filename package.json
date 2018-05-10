@@ -105,8 +105,8 @@
   "dependencies": {
     "bn.js": "4.11.6",
     "ethjs-abi": "0.2.1",
-    "ethjs-contract": "0.2.1",
-    "ethjs-filter": "0.1.5",
+    "ethjs-contract": "0.2.2",
+    "ethjs-filter": "0.1.8",
     "ethjs-provider-http": "0.1.6",
     "ethjs-query": "0.3.7",
     "ethjs-unit": "0.1.6",
@@ -251,5 +251,5 @@
     "test:clean": "rimraf ./coverage",
     "test:lib": "mocha ./lib/tests/**/*.js -R spec --timeout 2000000"
   },
-  "version": "0.3.8"
+  "version": "0.3.9"
 }
