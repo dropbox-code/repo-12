@@ -41,7 +41,7 @@ type UNO struct {
 	logger   *zap.Logger
 }
 
-// Options gathers available options when converting a document to PDF.
+// Options gathers available options when converting a document to another format.
 type Options struct {
 	// Landscape allows to change the orientation of the resulting PDF.
 	// Optional.
@@ -56,11 +56,15 @@ type Options struct {
 	// PDF/A-3b.
 	// Optional.
 	PDFformat string
+
+	// Optionally generate HTML output, particularly useful for rendering
+	// spreadsheets with many columns.
+	HTMLformat bool
 }
 
 // API is an abstraction on top of uno.
 type API interface {
-	PDF(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
+	Convert(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
 	Extensions() []string
 }
 
@@ -284,7 +288,7 @@ func (mod UNO) Checks() ([]health.CheckerOption, error) {
 	}, nil
 }
 
-// PDF converts a document to PDF.
+// Convert a document to another format.
 //
 // If there is no long-running LibreOffice listener, it creates a dedicated
 // LibreOffice instance for the conversion. Substantial calls to this method
@@ -292,11 +296,15 @@ func (mod UNO) Checks() ([]health.CheckerOption, error) {
 //
 // If there is a long-running LibreOffice listener, the conversion performance
 // improves substantially. However, it cannot perform parallel operations.
-func (mod UNO) PDF(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
+func (mod UNO) Convert(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
 	args := []string{
 		"--no-launch",
 		"--format",
-		"pdf",
+	}
+	if options.HTMLformat {
+		args = append(args, "html")
+	} else {
+		args = append(args, "pdf")
 	}
 
 	switch mod.libreOfficeRestartThreshold {
@@ -344,24 +352,27 @@ func (mod UNO) PDF(ctx context.Context, logger *zap.Logger, inputPath, outputPat
 		args = append(args, "-vvv")
 	}
 
-	if options.Landscape {
-		args = append(args, "--printer", "PaperOrientation=landscape")
-	}
+	// PDF-only options.
+	if !options.HTMLformat {
+		if options.Landscape {
+			args = append(args, "--printer", "PaperOrientation=landscape")
+		}
 
-	if options.PageRanges != "" {
-		args = append(args, "--export", fmt.Sprintf("PageRange=%s", options.PageRanges))
-	}
+		if options.PageRanges != "" {
+			args = append(args, "--export", fmt.Sprintf("PageRange=%s", options.PageRanges))
+		}
 
-	switch options.PDFformat {
-	case "":
-	case gotenberg.FormatPDFA1a:
-		args = append(args, "--export", "SelectPdfVersion=1")
-	case gotenberg.FormatPDFA2b:
-		args = append(args, "--export", "SelectPdfVersion=2")
-	case gotenberg.FormatPDFA3b:
-		args = append(args, "--export", "SelectPdfVersion=3")
-	default:
-		return ErrInvalidPDFformat
+		switch options.PDFformat {
+		case "":
+		case gotenberg.FormatPDFA1a:
+			args = append(args, "--export", "SelectPdfVersion=1")
+		case gotenberg.FormatPDFA2b:
+			args = append(args, "--export", "SelectPdfVersion=2")
+		case gotenberg.FormatPDFA3b:
+			args = append(args, "--export", "SelectPdfVersion=3")
+		default:
+			return ErrInvalidPDFformat
+		}
 	}
 
 	args = append(args, "--output", outputPath, inputPath)
@@ -371,7 +382,7 @@ func (mod UNO) PDF(ctx context.Context, logger *zap.Logger, inputPath, outputPat
 		return fmt.Errorf("create unoconv command: %w", err)
 	}
 
-	logger.Debug(fmt.Sprintf("print to PDF with: %+v", options))
+	logger.Debug(fmt.Sprintf("convert document with: %+v", options))
 
 	activeInstancesCountMu.Lock()
 	activeInstancesCount += 1
@@ -402,7 +413,7 @@ func (mod UNO) PDF(ctx context.Context, logger *zap.Logger, inputPath, outputPat
 	// On the second scenario, LibreOffice might not have time to remove some
 	// of its temporary files, as it has been killed without warning. The
 	// garbage collector will delete them for us (if the module is loaded).
-	return fmt.Errorf("unoconv PDF: %w", err)
+	return fmt.Errorf("unoconv Convert: %w", err)
 }
 
 // Extensions returns the file extensions available for conversions.
