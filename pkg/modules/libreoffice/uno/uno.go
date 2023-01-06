@@ -60,6 +60,12 @@ type Options struct {
 	// Optionally generate HTML output, particularly useful for rendering
 	// spreadsheets with many columns.
 	HTMLformat bool
+
+	// Optionally set the import filter to use.
+	ImportFilter string
+
+	// Optionally add import filter options.
+	ImportOptions string
 }
 
 // API is an abstraction on top of uno.
@@ -305,6 +311,13 @@ func (mod UNO) Convert(ctx context.Context, logger *zap.Logger, inputPath, outpu
 		args = append(args, "html")
 	} else {
 		args = append(args, "pdf")
+	}
+
+	if options.ImportFilter != "" {
+		args = append(args, "--import-filter-name", options.ImportFilter)
+	}
+	if options.ImportOptions != "" {
+		args = append(args, "--import", options.ImportOptions)
 	}
 
 	switch mod.libreOfficeRestartThreshold {
