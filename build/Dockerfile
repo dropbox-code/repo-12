@@ -1,8 +1,8 @@
 # Note: ARG instructions do not create additional layers.
 # Instead, next layers will concatenate them.
-ARG GOLANG_VERSION
+ARG GOLANG_VERSION=1.19
 # Note: we have to repeat ARG instructions in each build stage that uses them.
-ARG GOTENBERG_VERSION
+ARG GOTENBERG_VERSION=7.7.2
 
 FROM golang:$GOLANG_VERSION AS builder
 
@@ -22,13 +22,13 @@ COPY cmd ./cmd
 COPY pkg ./pkg
 
 # Build the binary.
-ARG GOTENBERG_VERSION
+ARG GOTENBERG_VERSION=7.7.2
 
 RUN go build -o gotenberg -ldflags "-X 'github.com/gotenberg/gotenberg/v7/cmd.Version=$GOTENBERG_VERSION'" cmd/gotenberg/main.go
 
 FROM debian:11-slim
 
-ARG GOTENBERG_VERSION
+ARG GOTENBERG_VERSION=7.7.2
 
 LABEL author="Julien Neuhart" \
       description="A Docker-powered stateless API for PDF files." \
@@ -46,10 +46,10 @@ COPY build/fonts.conf /etc/fonts/conf.d/100-gotenberg.conf
 COPY build/pdftk.sh /usr/bin/pdftk
 
 # Setup the Docker image.
-ARG GOTENBERG_USER_GID
-ARG GOTENBERG_USER_UID
-ARG NOTO_COLOR_EMOJI_VERSION
-ARG PDFTK_VERSION
+ARG GOTENBERG_USER_GID=1001
+ARG GOTENBERG_USER_UID=1001
+ARG NOTO_COLOR_EMOJI_VERSION=v2.038
+ARG PDFTK_VERSION=v3.3.3
 
 # Script for installing either Google Chrome stable on amd64 architecture or
 # Chromium on other architectures.
