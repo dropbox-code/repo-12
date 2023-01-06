@@ -714,6 +714,18 @@ components:
             Convert the input document to HTML, rather than PDF.  Caution!
             You cannot use with nativePdfA1Format, pdfFormat, nativePageRanges, or
             merge options!
+        importFormat:
+          type: string
+          example: text
+          description: >-
+            Explicitly set the import format for the document, which can be useful
+            when converting files without an extension.
+        importFilters:
+          type: string
+          example: FilterOptions=SHIFT_JIS
+          description: >-
+            Set import filters, which can be particularly useful in converting
+            input files created with a different character encoding.
       required:
         - files
     MergeFilesRequestBody:

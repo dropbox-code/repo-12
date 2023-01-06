@@ -31,6 +31,8 @@ func convertRoute(unoAPI uno.API, engine gotenberg.PDFEngine) api.Route {
 				PDFformat          string
 				htmlFormat         bool
 				merge              bool
+				importFilter       string
+				importOptions      string
 			)
 
 			err := ctx.FormData().
@@ -42,6 +44,8 @@ func convertRoute(unoAPI uno.API, engine gotenberg.PDFEngine) api.Route {
 				String("pdfFormat", &PDFformat, "").
 				Bool("htmlFormat", &htmlFormat, false).
 				Bool("merge", &merge, false).
+				String("importFilter", &importFilter, "").
+				String("importOptions", &importOptions, "").
 				Validate()
 
 			if err != nil {
@@ -114,10 +118,12 @@ func convertRoute(unoAPI uno.API, engine gotenberg.PDFEngine) api.Route {
 				outputPaths[i] = ctx.GeneratePath(extension)
 
 				options := uno.Options{
-					Landscape:  landscape,
-					PageRanges: nativePageRanges,
-					PDFformat:  nativePDFformat,
-					HTMLformat: htmlFormat,
+					Landscape:     landscape,
+					PageRanges:    nativePageRanges,
+					PDFformat:     nativePDFformat,
+					HTMLformat:    htmlFormat,
+					ImportFilter:  importFilter,
+					ImportOptions: importOptions,
 				}
 
 				err = unoAPI.Convert(ctx, ctx.Log(), inputPath, outputPaths[i], options)
