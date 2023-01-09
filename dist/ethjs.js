@@ -7343,10 +7343,10 @@ module.exports = g;
 "use strict";
 /* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
 
-var EthQuery = __webpack_require__(107);
+var EthQuery = __webpack_require__(108);
 var EthFilter = __webpack_require__(30);
 var EthContract = __webpack_require__(104);
-var HttpProvider = __webpack_require__(106);
+var HttpProvider = __webpack_require__(107);
 var abi = __webpack_require__(101);
 // const getTxSuccess = require('ethjs-transaction-success'); // eslint-disable-line
 var unit = __webpack_require__(110);
@@ -10067,239 +10067,6 @@ module.exports = {
 "use strict";
 'use strict';
 
-/**
- * @original-authors:
- *   Marek Kotewicz <marek@ethdev.com>
- *   Marian Oancea <marian@ethdev.com>
- *   Fabian Vogelsteller <fabian@ethdev.com>
- * @date 2015
- */
-
-// workaround to use httpprovider in different envs
-var XHR2 = __webpack_require__(121);
-
-/*
-""
-responseText
-:
-""
-responseType
-:
-""
-responseURL
-:
-"https://ropsten.infura.io/"
-responseXML
-:
-null
-status
-:
-405
-statusText
-:
-"Method Not Allowed"
-timeout
-:
-0
-*/
-
-/**
- * InvalidResponseError helper for invalid errors.
- */
-function invalidResponseError(request, host) {
-  var responseError = new Error('[ethjs-provider-http] Invalid JSON RPC response from provider\n    host: ' + host + '\n    response: ' + String(request.responseText) + ' ' + JSON.stringify(request.responseText, null, 2) + '\n    responseURL: ' + request.responseURL + '\n    status: ' + request.status + '\n    statusText: ' + request.statusText + '\n  ');
-  responseError.value = request;
-  return responseError;
-}
-
-/**
- * HttpProvider should be used to send rpc calls over http
- */
-function HttpProvider(host, timeout) {
-  if (!(this instanceof HttpProvider)) {
-    throw new Error('[ethjs-provider-http] the HttpProvider instance requires the "new" flag in order to function normally (e.g. `const eth = new Eth(new HttpProvider());`).');
-  }
-  if (typeof host !== 'string') {
-    throw new Error('[ethjs-provider-http] the HttpProvider instance requires that the host be specified (e.g. `new HttpProvider("http://localhost:8545")` or via service like infura `new HttpProvider("http://ropsten.infura.io")`)');
-  }
-
-  var self = this;
-  self.host = host;
-  self.timeout = timeout || 0;
-}
-
-/**
- * Should be used to make async request
- *
- * @method sendAsync
- * @param {Object} payload
- * @param {Function} callback triggered on end with (err, result)
- */
-HttpProvider.prototype.sendAsync = function (payload, callback) {
-  // eslint-disable-line
-  var self = this;
-  var request = new XHR2(); // eslint-disable-line
-
-  request.timeout = self.timeout;
-  request.open('POST', self.host, true);
-  request.setRequestHeader('Content-Type', 'application/json');
-
-  request.onreadystatechange = function () {
-    if (request.readyState === 4 && request.timeout !== 1) {
-      var result = request.responseText; // eslint-disable-line
-      var error = null; // eslint-disable-line
-
-      try {
-        result = JSON.parse(result);
-      } catch (jsonError) {
-        error = invalidResponseError(request, self.host);
-      }
-
-      callback(error, result);
-    }
-  };
-
-  request.ontimeout = function () {
-    callback('[ethjs-provider-http] CONNECTION TIMEOUT: http request timeout after ' + self.timeout + ' ms. (i.e. your connect has timed out for whatever reason, check your provider).', null);
-  };
-
-  try {
-    request.send(JSON.stringify(payload));
-  } catch (error) {
-    callback('[ethjs-provider-http] CONNECTION ERROR: Couldn\'t connect to node \'' + self.host + '\': ' + JSON.stringify(error, null, 2), null);
-  }
-};
-
-module.exports = HttpProvider;
-
-/***/ },
-/* 107 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-'use strict';
-
-var format = __webpack_require__(108);
-var EthRPC = __webpack_require__(109);
-var promiseToCallback = __webpack_require__(31);
-
-module.exports = Eth;
-
-function Eth(provider, options) {
-  var self = this;
-  var optionsObject = options || {};
-
-  if (!(this instanceof Eth)) {
-    throw new Error('[ethjs-query] the Eth object requires the "new" flag in order to function normally (i.e. `const eth = new Eth(provider);`).');
-  }
-  if (typeof provider !== 'object') {
-    throw new Error('[ethjs-query] the Eth object requires that the first input \'provider\' must be an object, got \'' + typeof provider + '\' (i.e. \'const eth = new Eth(provider);\')');
-  }
-
-  self.options = Object.assign({
-    debug: optionsObject.debug || false,
-    logger: optionsObject.logger || console,
-    jsonSpace: optionsObject.jsonSpace || 0
-  });
-  self.rpc = new EthRPC(provider);
-  self.setProvider = self.rpc.setProvider;
-}
-
-Eth.prototype.log = function log(message) {
-  var self = this;
-  if (self.options.debug) self.options.logger.log('[ethjs-query log] ' + message);
-};
-
-Object.keys(format.schema.methods).forEach(function (rpcMethodName) {
-  Object.defineProperty(Eth.prototype, rpcMethodName.replace('eth_', ''), {
-    enumerable: true,
-    value: generateFnFor(rpcMethodName, format.schema.methods[rpcMethodName])
-  });
-});
-
-function generateFnFor(rpcMethodName, methodObject) {
-  return function outputMethod() {
-    var callback = null; // eslint-disable-line
-    var inputs = null; // eslint-disable-line
-    var inputError = null; // eslint-disable-line
-    var self = this;
-    var args = [].slice.call(arguments); // eslint-disable-line
-    var protoMethodName = rpcMethodName.replace('eth_', ''); // eslint-disable-line
-
-    if (args.length > 0 && typeof args[args.length - 1] === 'function') {
-      callback = args.pop();
-    }
-
-    var promise = performCall.call(this);
-
-    // if callback provided, convert promise to callback
-    if (callback) {
-      return promiseToCallback(promise)(callback);
-    }
-
-    // only return promise if no callback provided
-    return promise;
-
-    function performCall() {
-      var _this = this;
-
-      return new Promise(function (resolve, reject) {
-        // validate arg length
-        if (args.length < methodObject[2]) {
-          reject(new Error('[ethjs-query] method \'' + protoMethodName + '\' requires at least ' + methodObject[2] + ' input (format type ' + methodObject[0][0] + '), ' + args.length + ' provided. For more information visit: https://github.com/ethereum/wiki/wiki/JSON-RPC#' + rpcMethodName.toLowerCase()));
-          return;
-        }
-        if (args.length > methodObject[0].length) {
-          reject(new Error('[ethjs-query] method \'' + protoMethodName + '\' requires at most ' + methodObject[0].length + ' params, ' + args.length + ' provided \'' + JSON.stringify(args, null, self.options.jsonSpace) + '\'. For more information visit: https://github.com/ethereum/wiki/wiki/JSON-RPC#' + rpcMethodName.toLowerCase()));
-          return;
-        }
-
-        // set default block
-        if (methodObject[3] && args.length < methodObject[3]) {
-          args.push('latest');
-        }
-
-        // format inputs
-        _this.log('attempting method formatting for \'' + protoMethodName + '\' with inputs ' + JSON.stringify(args, null, _this.options.jsonSpace));
-        try {
-          inputs = format.formatInputs(rpcMethodName, args);
-          _this.log('method formatting success for \'' + protoMethodName + '\' with formatted result: ' + JSON.stringify(inputs, null, _this.options.jsonSpace));
-        } catch (formattingError) {
-          reject(new Error('[ethjs-query] while formatting inputs \'' + JSON.stringify(args, null, _this.options.jsonSpace) + '\' for method \'' + protoMethodName + '\' error: ' + formattingError));
-          return;
-        }
-
-        // perform rpc call
-        _this.rpc.sendAsync({ method: rpcMethodName, params: inputs }).then(function (result) {
-          // format result
-          try {
-            _this.log('attempting method formatting for \'' + protoMethodName + '\' with raw outputs: ' + JSON.stringify(result, null, _this.options.jsonSpace));
-            var methodOutputs = format.formatOutputs(rpcMethodName, result);
-            _this.log('method formatting success for \'' + protoMethodName + '\' formatted result: ' + JSON.stringify(methodOutputs, null, _this.options.jsonSpace));
-            resolve(methodOutputs);
-            return;
-          } catch (outputFormattingError) {
-            var outputError = new Error('[ethjs-query] while formatting outputs from RPC \'' + JSON.stringify(result, null, _this.options.jsonSpace) + '\' for method \'' + protoMethodName + '\' ' + outputFormattingError);
-            reject(outputError);
-            return;
-          }
-        })['catch'](function (error) {
-          var outputError = new Error('[ethjs-query] while formatting outputs from RPC \'' + JSON.stringify(error, null, _this.options.jsonSpace) + '\'');
-          reject(outputError);
-          return;
-        });
-      });
-    }
-  };
-}
-
-/***/ },
-/* 108 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-'use strict';
-
 var schema = __webpack_require__(114);
 var util = __webpack_require__(19);
 var numberToBN = __webpack_require__(12);
@@ -10552,6 +10319,239 @@ module.exports = {
   formatInputs: formatInputs,
   formatOutputs: formatOutputs
 };
+
+/***/ },
+/* 107 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+'use strict';
+
+/**
+ * @original-authors:
+ *   Marek Kotewicz <marek@ethdev.com>
+ *   Marian Oancea <marian@ethdev.com>
+ *   Fabian Vogelsteller <fabian@ethdev.com>
+ * @date 2015
+ */
+
+// workaround to use httpprovider in different envs
+var XHR2 = __webpack_require__(121);
+
+/*
+""
+responseText
+:
+""
+responseType
+:
+""
+responseURL
+:
+"https://ropsten.infura.io/"
+responseXML
+:
+null
+status
+:
+405
+statusText
+:
+"Method Not Allowed"
+timeout
+:
+0
+*/
+
+/**
+ * InvalidResponseError helper for invalid errors.
+ */
+function invalidResponseError(request, host) {
+  var responseError = new Error('[ethjs-provider-http] Invalid JSON RPC response from provider\n    host: ' + host + '\n    response: ' + String(request.responseText) + ' ' + JSON.stringify(request.responseText, null, 2) + '\n    responseURL: ' + request.responseURL + '\n    status: ' + request.status + '\n    statusText: ' + request.statusText + '\n  ');
+  responseError.value = request;
+  return responseError;
+}
+
+/**
+ * HttpProvider should be used to send rpc calls over http
+ */
+function HttpProvider(host, timeout) {
+  if (!(this instanceof HttpProvider)) {
+    throw new Error('[ethjs-provider-http] the HttpProvider instance requires the "new" flag in order to function normally (e.g. `const eth = new Eth(new HttpProvider());`).');
+  }
+  if (typeof host !== 'string') {
+    throw new Error('[ethjs-provider-http] the HttpProvider instance requires that the host be specified (e.g. `new HttpProvider("http://localhost:8545")` or via service like infura `new HttpProvider("http://ropsten.infura.io")`)');
+  }
+
+  var self = this;
+  self.host = host;
+  self.timeout = timeout || 0;
+}
+
+/**
+ * Should be used to make async request
+ *
+ * @method sendAsync
+ * @param {Object} payload
+ * @param {Function} callback triggered on end with (err, result)
+ */
+HttpProvider.prototype.sendAsync = function (payload, callback) {
+  // eslint-disable-line
+  var self = this;
+  var request = new XHR2(); // eslint-disable-line
+
+  request.timeout = self.timeout;
+  request.open('POST', self.host, true);
+  request.setRequestHeader('Content-Type', 'application/json');
+
+  request.onreadystatechange = function () {
+    if (request.readyState === 4 && request.timeout !== 1) {
+      var result = request.responseText; // eslint-disable-line
+      var error = null; // eslint-disable-line
+
+      try {
+        result = JSON.parse(result);
+      } catch (jsonError) {
+        error = invalidResponseError(request, self.host);
+      }
+
+      callback(error, result);
+    }
+  };
+
+  request.ontimeout = function () {
+    callback('[ethjs-provider-http] CONNECTION TIMEOUT: http request timeout after ' + self.timeout + ' ms. (i.e. your connect has timed out for whatever reason, check your provider).', null);
+  };
+
+  try {
+    request.send(JSON.stringify(payload));
+  } catch (error) {
+    callback('[ethjs-provider-http] CONNECTION ERROR: Couldn\'t connect to node \'' + self.host + '\': ' + JSON.stringify(error, null, 2), null);
+  }
+};
+
+module.exports = HttpProvider;
+
+/***/ },
+/* 108 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+'use strict';
+
+var format = __webpack_require__(106);
+var EthRPC = __webpack_require__(109);
+var promiseToCallback = __webpack_require__(31);
+
+module.exports = Eth;
+
+function Eth(provider, options) {
+  var self = this;
+  var optionsObject = options || {};
+
+  if (!(this instanceof Eth)) {
+    throw new Error('[ethjs-query] the Eth object requires the "new" flag in order to function normally (i.e. `const eth = new Eth(provider);`).');
+  }
+  if (typeof provider !== 'object') {
+    throw new Error('[ethjs-query] the Eth object requires that the first input \'provider\' must be an object, got \'' + typeof provider + '\' (i.e. \'const eth = new Eth(provider);\')');
+  }
+
+  self.options = Object.assign({
+    debug: optionsObject.debug || false,
+    logger: optionsObject.logger || console,
+    jsonSpace: optionsObject.jsonSpace || 0
+  });
+  self.rpc = new EthRPC(provider);
+  self.setProvider = self.rpc.setProvider;
+}
+
+Eth.prototype.log = function log(message) {
+  var self = this;
+  if (self.options.debug) self.options.logger.log('[ethjs-query log] ' + message);
+};
+
+Object.keys(format.schema.methods).forEach(function (rpcMethodName) {
+  Object.defineProperty(Eth.prototype, rpcMethodName.replace('eth_', ''), {
+    enumerable: true,
+    value: generateFnFor(rpcMethodName, format.schema.methods[rpcMethodName])
+  });
+});
+
+function generateFnFor(rpcMethodName, methodObject) {
+  return function outputMethod() {
+    var callback = null; // eslint-disable-line
+    var inputs = null; // eslint-disable-line
+    var inputError = null; // eslint-disable-line
+    var self = this;
+    var args = [].slice.call(arguments); // eslint-disable-line
+    var protoMethodName = rpcMethodName.replace('eth_', ''); // eslint-disable-line
+
+    if (args.length > 0 && typeof args[args.length - 1] === 'function') {
+      callback = args.pop();
+    }
+
+    var promise = performCall.call(this);
+
+    // if callback provided, convert promise to callback
+    if (callback) {
+      return promiseToCallback(promise)(callback);
+    }
+
+    // only return promise if no callback provided
+    return promise;
+
+    function performCall() {
+      var _this = this;
+
+      return new Promise(function (resolve, reject) {
+        // validate arg length
+        if (args.length < methodObject[2]) {
+          reject(new Error('[ethjs-query] method \'' + protoMethodName + '\' requires at least ' + methodObject[2] + ' input (format type ' + methodObject[0][0] + '), ' + args.length + ' provided. For more information visit: https://github.com/ethereum/wiki/wiki/JSON-RPC#' + rpcMethodName.toLowerCase()));
+          return;
+        }
+        if (args.length > methodObject[0].length) {
+          reject(new Error('[ethjs-query] method \'' + protoMethodName + '\' requires at most ' + methodObject[0].length + ' params, ' + args.length + ' provided \'' + JSON.stringify(args, null, self.options.jsonSpace) + '\'. For more information visit: https://github.com/ethereum/wiki/wiki/JSON-RPC#' + rpcMethodName.toLowerCase()));
+          return;
+        }
+
+        // set default block
+        if (methodObject[3] && args.length < methodObject[3]) {
+          args.push('latest');
+        }
+
+        // format inputs
+        _this.log('attempting method formatting for \'' + protoMethodName + '\' with inputs ' + JSON.stringify(args, null, _this.options.jsonSpace));
+        try {
+          inputs = format.formatInputs(rpcMethodName, args);
+          _this.log('method formatting success for \'' + protoMethodName + '\' with formatted result: ' + JSON.stringify(inputs, null, _this.options.jsonSpace));
+        } catch (formattingError) {
+          reject(new Error('[ethjs-query] while formatting inputs \'' + JSON.stringify(args, null, _this.options.jsonSpace) + '\' for method \'' + protoMethodName + '\' error: ' + formattingError));
+          return;
+        }
+
+        // perform rpc call
+        _this.rpc.sendAsync({ method: rpcMethodName, params: inputs }).then(function (result) {
+          // format result
+          try {
+            _this.log('attempting method formatting for \'' + protoMethodName + '\' with raw outputs: ' + JSON.stringify(result, null, _this.options.jsonSpace));
+            var methodOutputs = format.formatOutputs(rpcMethodName, result);
+            _this.log('method formatting success for \'' + protoMethodName + '\' formatted result: ' + JSON.stringify(methodOutputs, null, _this.options.jsonSpace));
+            resolve(methodOutputs);
+            return;
+          } catch (outputFormattingError) {
+            var outputError = new Error('[ethjs-query] while formatting outputs from RPC \'' + JSON.stringify(result, null, _this.options.jsonSpace) + '\' for method \'' + protoMethodName + '\' ' + outputFormattingError);
+            reject(outputError);
+            return;
+          }
+        })['catch'](function (error) {
+          var outputError = new Error('[ethjs-query] while formatting outputs from RPC \'' + JSON.stringify(error, null, _this.options.jsonSpace) + '\'');
+          reject(outputError);
+          return;
+        });
+      });
+    }
+  };
+}
 
 /***/ },
 /* 109 */
