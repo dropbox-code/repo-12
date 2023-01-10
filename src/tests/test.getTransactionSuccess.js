@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const TestRPC = require('ethereumjs-testrpc');
+const TestRPC = require('ganache-cli');
 const provider = TestRPC.provider();
 const Eth = require('../index.js');
 
