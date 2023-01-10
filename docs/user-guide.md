@@ -67,7 +67,7 @@ Thank you for trying out `ethjs`! A highly optimized light-weight JS utiltity fo
 
 ### Nodes
 
-`ethjs` is meant to be a simple javascript interface for Ethereum nodes and clients. If you are not running a node, we recommend using [TestRPC](https://github.com/ethereumjs/testrpc) (`npm install --save-dev ethereumjs-testrpc`), [MetaMask](https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en), [Mist](https://github.com/ethereum/mist/releases), or [Infura](https://www.infura.io/). A node or client is generally required to both access and use Ethereum accounts, smart-contracts and the Ethereum blockchain.
+`ethjs` is meant to be a simple javascript interface for Ethereum nodes and clients. If you are not running a node, we recommend using [ganache](https://github.com/trufflesuite/ganache) (`npm install --save-dev ganache`), [MetaMask](https://metamask.io), or [Infura](https://www.infura.io/). A node or client is generally required to both access and use Ethereum accounts, smart contracts and the Ethereum blockchain.
 
 ### Accounts
 
