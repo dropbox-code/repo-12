@@ -2,12 +2,16 @@ package uno
 
 import (
 	"context"
+	b64 "encoding/base64"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/alexliesenfeld/health"
 	"github.com/gotenberg/gotenberg/v7/pkg/gotenberg"
 	"github.com/gotenberg/gotenberg/v7/pkg/modules/api"
@@ -408,6 +412,47 @@ func (mod UNO) Convert(ctx context.Context, logger *zap.Logger, inputPath, outpu
 	activeInstancesCountMu.Unlock()
 
 	if err == nil {
+		// Replace the image links with embedded images.
+		if options.HTMLformat {
+			infile, err := os.Open(outputPath)
+			if err != nil {
+				logger.Error("Unable to read output html file at " + outputPath)
+				return nil
+			}
+			doc, err := goquery.NewDocumentFromReader(infile)
+			defer infile.Close()
+			if err != nil {
+				logger.Error("Unable to initialize goquery")
+				return nil
+			}
+			doc.Find("img[src]").Each(func(i int, s *goquery.Selection) {
+				src, ok := s.Attr("src")
+				if ok && src != "" {
+					fullPath := filepath.Join(filepath.Dir(outputPath), src)
+					if _, err := os.Stat(fullPath); err == nil {
+						logger.Info("Found an image to embed: " + fullPath)
+						imageData, err := os.ReadFile(fullPath)
+						if err == nil {
+							encoded := b64.StdEncoding.EncodeToString(imageData)
+							s.SetAttr("src", "data:image/"+filepath.Ext(src)+";base64,"+encoded)
+							logger.Info("Embedded the image that was in: " + src)
+						}
+					}
+				}
+			})
+			// Rewrite output file with the modified document.
+			html, err := doc.Selection.Html()
+			if err != nil {
+				logger.Error("Error extracting modified html from goquery")
+				return nil
+			}
+			err = ioutil.WriteFile(outputPath+".embedded", []byte(html), 0644)
+			if err == nil {
+				logger.Info("Wrote the embedded version of the html file")
+				_ = os.Rename(outputPath+".embedded", outputPath)
+			}
+		}
+
 		return nil
 	}
 

@@ -3,6 +3,7 @@ module github.com/gotenberg/gotenberg/v7
 go 1.19
 
 require (
+	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/alexliesenfeld/health v0.6.0
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/chromedp/cdproto v0.0.0-20221126224343-3a0787b8dd28
@@ -38,6 +39,7 @@ require (
 )
 
 require (
+	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
