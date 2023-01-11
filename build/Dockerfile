@@ -2,7 +2,7 @@
 # Instead, next layers will concatenate them.
 ARG GOLANG_VERSION=1.19
 # Note: we have to repeat ARG instructions in each build stage that uses them.
-ARG GOTENBERG_VERSION=7.7.3
+ARG GOTENBERG_VERSION=7.7.4
 
 FROM golang:$GOLANG_VERSION AS builder
 
@@ -22,13 +22,13 @@ COPY cmd ./cmd
 COPY pkg ./pkg
 
 # Build the binary.
-ARG GOTENBERG_VERSION=7.7.3
+ARG GOTENBERG_VERSION=7.7.4
 
 RUN go build -o gotenberg -ldflags "-X 'github.com/gotenberg/gotenberg/v7/cmd.Version=$GOTENBERG_VERSION'" cmd/gotenberg/main.go
 
 FROM debian:11-slim
 
-ARG GOTENBERG_VERSION=7.7.3
+ARG GOTENBERG_VERSION=7.7.4
 
 LABEL author="Julien Neuhart" \
       description="A Docker-powered stateless API for PDF files." \
