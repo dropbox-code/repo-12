@@ -542,6 +542,9 @@ func (mod UNO) Extensions() []string {
 		".xls",
 		".xlt",
 		".xlsx",
+		".odg",
+		".dotx",
+		".xltx",
 	}
 }
 
