@@ -1,8 +1,8 @@
 # Note: ARG instructions do not create additional layers.
 # Instead, next layers will concatenate them.
-ARG GOLANG_VERSION=1.19
+ARG GOLANG_VERSION=1.20
 # Note: we have to repeat ARG instructions in each build stage that uses them.
-ARG GOTENBERG_VERSION=7.7.4
+ARG GOTENBERG_VERSION=7.7.5
 
 FROM golang:$GOLANG_VERSION AS builder
 
@@ -22,13 +22,13 @@ COPY cmd ./cmd
 COPY pkg ./pkg
 
 # Build the binary.
-ARG GOTENBERG_VERSION=7.7.4
+ARG GOTENBERG_VERSION=7.7.5
 
 RUN go build -o gotenberg -ldflags "-X 'github.com/gotenberg/gotenberg/v7/cmd.Version=$GOTENBERG_VERSION'" cmd/gotenberg/main.go
 
 FROM debian:11-slim
 
-ARG GOTENBERG_VERSION=7.7.4
+ARG GOTENBERG_VERSION=7.7.5
 
 LABEL author="Julien Neuhart" \
       description="A Docker-powered stateless API for PDF files." \
@@ -66,7 +66,7 @@ RUN \
     # Install dependencies required for the next instructions or debugging.
     # Note: tini is a helper for reaping zombie processes.
     apt-get update -qq &&\
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends curl gnupg htop tini python3 default-jre-headless &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends curl gnupg htop tini python3 openjdk-17-jre-headless &&\
     ln -s /usr/bin/htop /usr/bin/top &&\
     # Install fonts.
     # Credits:
@@ -118,23 +118,9 @@ RUN \
     # Install Google Chrome / Chromium.
     /tmp/install-chromium.sh &&\
     # Install LibreOffice.
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends libreoffice &&\
-    # Next lines are not currently relevant, as latest versions of LibreOffice
-    # (i.e., > 7.0.4) are causing troubles.
-    # See:
-    # https://packages.debian.org/search?keywords=libreoffice.
-    # https://github.com/gotenberg/gotenberg/issues/442.
-    # https://github.com/gotenberg/gotenberg/issues/516.
-    # https://github.com/gotenberg/gotenberg/issues/529.
-    # https://github.com/gotenberg/gotenberg/issues/537.
-    # https://github.com/gotenberg/gotenberg/issues/568.
-        # Note: we use the bullseye-backports distribution to get the latest LibreOffice version.
-        # See:
-        # https://github.com/gotenberg/gotenberg/pull/322.
-        # https://github.com/gotenberg/gotenberg/issues/403.
-        #echo "deb https://httpredir.debian.org/debian/ bullseye-backports main contrib non-free" >> /etc/apt/sources.list &&\
-        #apt-get update -qq &&\
-        #DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends -t bullseye-backports libreoffice &&\
+    echo "deb https://httpredir.debian.org/debian/ bullseye-backports main contrib non-free" >> /etc/apt/sources.list &&\
+    apt-get update -qq &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends -t bullseye-backports libreoffice &&\
     # Download unoconv (Python script).
     curl -Ls https://raw.githubusercontent.com/dagwieers/unoconv/master/unoconv -o /usr/bin/unoconv &&\
     chmod +x /usr/bin/unoconv &&\
