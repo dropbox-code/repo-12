@@ -65,8 +65,9 @@ RUN \
     chown gotenberg: /home/gotenberg &&\
     # Install dependencies required for the next instructions or debugging.
     # Note: tini is a helper for reaping zombie processes.
+    # Note: ca-certificates-java, default-jdk, openjdk-17-jre-headless installed in this order to avoid https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1030129
     apt-get update -qq &&\
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends curl gnupg htop tini python3 openjdk-17-jre-headless &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends curl gnupg htop tini python3 ca-certificates-java default-jdk openjdk-17-jre-headless &&\
     ln -s /usr/bin/htop /usr/bin/top &&\
     # Install fonts.
     # Credits:
