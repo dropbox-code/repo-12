@@ -2,7 +2,7 @@
 # Instead, next layers will concatenate them.
 ARG GOLANG_VERSION=1.20
 # Note: we have to repeat ARG instructions in each build stage that uses them.
-ARG GOTENBERG_VERSION=7.7.5
+ARG GOTENBERG_VERSION=7.7.6
 
 FROM golang:$GOLANG_VERSION AS builder
 
