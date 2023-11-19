@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0]
+### Changed
+- Rename package from `ethjs` to `@metamask/ethjs` ([#9](https://github.com/MetaMask/ethjs/pull/9))
+- Deprecate nodejs <8.17, npm<6 ([#8](https://github.com/MetaMask/ethjs/pull/8))
+
+### Fixed
+- Re-build `dist` from source ([#2](https://github.com/MetaMask/ethjs/pull/2))
+
 ## [0.3.5]
 ### Fixed
 - Fix getTransactionSuccess unhandled promise rejection
@@ -72,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Basic docs
   - License
 
-[Unreleased]: https://github.com/MetaMask/ethjs/compare/v0.3.5...HEAD
+[Unreleased]: https://github.com/MetaMask/ethjs/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/MetaMask/ethjs/compare/v0.3.5...v0.5.0
 [0.3.5]: https://github.com/MetaMask/ethjs/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/MetaMask/ethjs/compare/v0.2.8...v0.3.4
 [0.2.8]: https://github.com/MetaMask/ethjs/compare/v0.2.7...v0.2.8
