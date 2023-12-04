@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1]
+### Changed
+- Replace `ethjs` packages with `@metamask/` forks ([#12](https://github.com/MetaMask/ethjs/pull/12)) ([#16](https://github.com/MetaMask/ethjs/pull/16))
+
+### Fixed
+- Bump `js-sha3` from `0.5.5` to `^0.9.2` ([#13](https://github.com/MetaMask/ethjs/pull/13))
+  - `npm dedupe; npm audit fix`
+
 ## [0.5.0]
 ### Changed
 - Rename package from `ethjs` to `@metamask/ethjs` ([#9](https://github.com/MetaMask/ethjs/pull/9))
@@ -80,7 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Basic docs
   - License
 
-[Unreleased]: https://github.com/MetaMask/ethjs/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/MetaMask/ethjs/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/MetaMask/ethjs/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/MetaMask/ethjs/compare/v0.3.5...v0.5.0
 [0.3.5]: https://github.com/MetaMask/ethjs/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/MetaMask/ethjs/compare/v0.2.8...v0.3.4
