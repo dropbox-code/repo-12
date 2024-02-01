@@ -1,11 +1,14 @@
-# Note: ARG instructions do not create additional layers.
-# Instead, next layers will concatenate them.
-ARG GOLANG_VERSION=1.20
-# Note: we have to repeat ARG instructions in each build stage that uses them.
-ARG GOTENBERG_VERSION=7.7.6
+# ARG instructions do not create additional layers. Instead, next layers will
+# concatenate them. Also, we have to repeat ARG instructions in each build
+# stage that uses them.
+ARG GOLANG_VERSION
 
-FROM golang:$GOLANG_VERSION AS builder
+# ----------------------------------------------
+# Gotenberg binary build stage
+# ----------------------------------------------
+FROM golang:$GOLANG_VERSION AS binary-stage
 
+ARG GOTENBERG_VERSION
 ENV CGO_ENABLED 0
 
 # Define the working directory outside of $GOPATH (we're using go modules).
@@ -21,40 +24,26 @@ RUN go mod download &&\
 COPY cmd ./cmd
 COPY pkg ./pkg
 
-# Build the binary.
-ARG GOTENBERG_VERSION=7.7.6
+RUN go build -o gotenberg -ldflags "-X 'github.com/gotenberg/gotenberg/v8/cmd.Version=$GOTENBERG_VERSION'" cmd/gotenberg/main.go
 
-RUN go build -o gotenberg -ldflags "-X 'github.com/gotenberg/gotenberg/v7/cmd.Version=$GOTENBERG_VERSION'" cmd/gotenberg/main.go
+# ----------------------------------------------
+# Final stage
+# ----------------------------------------------
+FROM debian:12-slim
 
-FROM debian:11-slim
+ARG GOTENBERG_VERSION
+ARG GOTENBERG_USER_GID
+ARG GOTENBERG_USER_UID
+ARG NOTO_COLOR_EMOJI_VERSION
+ARG PDFTK_VERSION
+ARG TMP_CHOMIUM_VERSION_ARMHF="116.0.5845.180-1~deb12u1"
 
-ARG GOTENBERG_VERSION=7.7.6
-
-LABEL author="Julien Neuhart" \
-      description="A Docker-powered stateless API for PDF files." \
-      github="https://github.com/gotenberg/gotenberg" \
-      version="$GOTENBERG_VERSION" \
-      website="https://gotenberg.dev"
-
-# Improve fonts subpixel hinting and smoothing.
-# Credits:
-# https://github.com/arachnys/athenapdf/issues/69.
-# https://github.com/arachnys/athenapdf/commit/ba25a8d80a25d08d58865519c4cd8756dc9a336d.
-COPY build/fonts.conf /etc/fonts/conf.d/100-gotenberg.conf
-
-# Simple wrapper around Java and PDFtk.
-COPY build/pdftk.sh /usr/bin/pdftk
-
-# Setup the Docker image.
-ARG GOTENBERG_USER_GID=1001
-ARG GOTENBERG_USER_UID=1001
-ARG NOTO_COLOR_EMOJI_VERSION=v2.038
-ARG PDFTK_VERSION=v3.3.3
-
-# Script for installing either Google Chrome stable on amd64 architecture or
-# Chromium on other architectures.
-# See https://github.com/gotenberg/gotenberg/issues/328.
-COPY build/install-chromium.sh /tmp/install-chromium.sh
+LABEL org.opencontainers.image.title="Gotenberg" \
+      org.opencontainers.image.description="A Docker-powered stateless API for PDF files." \
+      org.opencontainers.image.version="$GOTENBERG_VERSION" \
+      org.opencontainers.image.authors="Julien Neuhart <neuhart.julien@gmail.com>" \
+      org.opencontainers.image.documentation="https://gotenberg.dev" \
+      org.opencontainers.image.source="https://github.com/gotenberg/gotenberg"
 
 RUN \
     # Create a non-root user.
@@ -62,20 +51,28 @@ RUN \
     groupadd --gid "$GOTENBERG_USER_GID" gotenberg &&\
     useradd --uid "$GOTENBERG_USER_UID" --gid gotenberg --shell /bin/bash --home /home/gotenberg --no-create-home gotenberg &&\
     mkdir /home/gotenberg &&\
-    chown gotenberg: /home/gotenberg &&\
-    # Install dependencies required for the next instructions or debugging.
+    chown gotenberg: /home/gotenberg
+
+RUN \
+    # Install system dependencies required for the next instructions or debugging.
     # Note: tini is a helper for reaping zombie processes.
-    # Note: ca-certificates-java, default-jdk, openjdk-17-jre-headless installed in this order to avoid https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1030129
     apt-get update -qq &&\
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends curl gnupg htop tini python3 ca-certificates-java default-jdk openjdk-17-jre-headless &&\
-    ln -s /usr/bin/htop /usr/bin/top &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends curl gnupg tini python3 default-jre-headless &&\
+    # Cleanup.
+    # Note: the Debian image does automatically a clean after each install thanks to a hook.
+    # Therefore, there is no need for apt-get clean.
+    # See https://stackoverflow.com/a/24417119/3248473.
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN \
     # Install fonts.
     # Credits:
     # https://github.com/arachnys/athenapdf/blob/master/cli/Dockerfile.
     # https://help.accusoft.com/PrizmDoc/v12.1/HTML/Installing_Asian_Fonts_on_Ubuntu_and_Debian.html.
-    curl -o ./ttf-mscorefonts-installer_3.8_all.deb http://httpredir.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb &&\
+    curl -o ./ttf-mscorefonts-installer_3.8.1_all.deb http://httpredir.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8.1_all.deb &&\
+    apt-get update -qq &&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
-    ./ttf-mscorefonts-installer_3.8_all.deb \
+    ./ttf-mscorefonts-installer_3.8.1_all.deb \
     culmus \
     fonts-beng \
     fonts-hosny-amiri \
@@ -110,65 +107,92 @@ RUN \
     fonts-noto-ui-core \
     fonts-sil-gentium \
     fonts-sil-gentium-basic &&\
-    rm -f ./ttf-mscorefonts-installer_3.8_all.deb &&\
+    rm -f ./ttf-mscorefonts-installer_3.8.1_all.deb &&\
     # Add Color and Black-and-White Noto emoji font.
     # Credits:
     # https://github.com/gotenberg/gotenberg/pull/325.
     # https://github.com/googlefonts/noto-emoji.
     curl -Ls "https://github.com/googlefonts/noto-emoji/raw/$NOTO_COLOR_EMOJI_VERSION/fonts/NotoColorEmoji.ttf" -o /usr/local/share/fonts/NotoColorEmoji.ttf &&\
-    # Install Google Chrome / Chromium.
-    /tmp/install-chromium.sh &&\
-    # Install LibreOffice.
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends libreoffice &&\
-    # Next lines are not currently relevant, as latest versions of LibreOffice
-    # (i.e., > 7.0.4) are causing troubles.
-    # See:
-    # https://packages.debian.org/search?keywords=libreoffice.
-    # https://github.com/gotenberg/gotenberg/issues/442.
-    # https://github.com/gotenberg/gotenberg/issues/516.
-    # https://github.com/gotenberg/gotenberg/issues/529.
-    # https://github.com/gotenberg/gotenberg/issues/537.
-    # https://github.com/gotenberg/gotenberg/issues/568.
-        # Note: we use the bullseye-backports distribution to get the latest LibreOffice version.
-        # See:
-        # https://github.com/gotenberg/gotenberg/pull/322.
-        # https://github.com/gotenberg/gotenberg/issues/403.
-        #echo "deb https://httpredir.debian.org/debian/ bullseye-backports main contrib non-free" >> /etc/apt/sources.list &&\
-        #apt-get update -qq &&\
-        #DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends -t bullseye-backports libreoffice &&\
-    # Download unoconv (Python script).
-    curl -Ls https://raw.githubusercontent.com/dagwieers/unoconv/master/unoconv -o /usr/bin/unoconv &&\
-    chmod +x /usr/bin/unoconv &&\
-    # unoconv will look for the Python binary, which has to be at version 3.
+    # Cleanup.
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN \
+    # Install either Google Chrome stable on amd64 architecture or
+    # Chromium on other architectures.
+    # See https://github.com/gotenberg/gotenberg/issues/328.
+    # FIXME:
+    # armhf is currently not working with the latest version of Chromium.
+    # See: https://github.com/gotenberg/gotenberg/issues/709.
+    /bin/bash -c \
+    'set -e &&\
+    if [[ "$(dpkg --print-architecture)" == "amd64" ]]; then \
+      curl https://dl.google.com/linux/linux_signing_key.pub | apt-key add - &&\
+      echo "deb http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list &&\
+      apt-get update -qq &&\
+      DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends --allow-unauthenticated google-chrome-stable &&\
+      mv /usr/bin/google-chrome-stable /usr/bin/chromium; \
+    elif [[ "$(dpkg --print-architecture)" == "armhf" ]]; then \
+      apt-get update -qq &&\
+      DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends devscripts &&\
+      debsnap chromium-common "$TMP_CHOMIUM_VERSION_ARMHF" -v --force --binary --architecture armhf &&\
+      debsnap chromium "$TMP_CHOMIUM_VERSION_ARMHF" -v --force --binary --architecture armhf &&\
+      DEBIAN_FRONTEND=noninteractive apt-get install --fix-broken -y -qq --no-install-recommends "./binary-chromium-common/chromium-common_${TMP_CHOMIUM_VERSION_ARMHF}_armhf.deb" "./binary-chromium/chromium_${TMP_CHOMIUM_VERSION_ARMHF}_armhf.deb" &&\
+      DEBIAN_FRONTEND=noninteractive apt-get purge -y -qq devscripts &&\
+      rm -rf ./binary-chromium-common/* ./binary-chromium/*; \
+    else \
+      apt-get update -qq &&\
+      DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends chromium; \
+    fi' &&\
+    # Verify installation.
+    chromium --version &&\
+    # Cleanup.
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN \
+    # Install LibreOffice & unoconverter.
+    echo "deb http://deb.debian.org/debian bookworm-backports main" >> /etc/apt/sources.list &&\
+    apt-get update -qq &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends -t bookworm-backports libreoffice &&\
+    curl -Ls https://raw.githubusercontent.com/gotenberg/unoconverter/v0.0.1/unoconv -o /usr/bin/unoconverter &&\
+    chmod +x /usr/bin/unoconverter &&\
+    # unoconverter will look for the Python binary, which has to be at version 3.
     ln -s /usr/bin/python3 /usr/bin/python &&\
-    # Download PDFtk.
-    # See https://github.com/gotenberg/gotenberg/pull/273. \
+    # Verify installations.
+    libreoffice --version &&\
+    unoconverter --version &&\
+    # Cleanup.
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN \
+    # Install PDFtk & QPDF (PDF engines).
+    # See https://github.com/gotenberg/gotenberg/pull/273.
     curl -o /usr/bin/pdftk-all.jar "https://gitlab.com/api/v4/projects/5024297/packages/generic/pdftk-java/$PDFTK_VERSION/pdftk-all.jar" &&\
     chmod a+x /usr/bin/pdftk-all.jar &&\
-    # Download QPDF.
+    echo '#!/bin/bash\n\nexec java -jar /usr/bin/pdftk-all.jar "$@"' > /usr/bin/pdftk && \
+    chmod +x /usr/bin/pdftk &&\
+    apt-get update -qq &&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends qpdf &&\
     # See https://github.com/nextcloud/docker/issues/380.
     mkdir -p /usr/share/man/man1 &&\
-    # Cleanup.
-    # Note: the Debian image does automatically a clean after each install thanks to a hook.
-    # Therefore, there is no need for apt-get clean.
-    # See https://stackoverflow.com/a/24417119/3248473.
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* &&\
-    # Print versions of main dependencies.
-    chromium --version &&\
-    libreoffice --version &&\
-    unoconv --version &&\
+    # Verify installations.
     pdftk --version &&\
-    qpdf --version
+    qpdf --version &&\
+    # Cleanup.
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Copy the Gotenberg binary from the builder stage.
-COPY --from=builder /home/gotenberg /usr/bin/
+# Improve fonts subpixel hinting and smoothing.
+# Credits:
+# https://github.com/arachnys/athenapdf/issues/69.
+# https://github.com/arachnys/athenapdf/commit/ba25a8d80a25d08d58865519c4cd8756dc9a336d.
+COPY build/fonts.conf /etc/fonts/conf.d/100-gotenberg.conf
+
+# Copy the Gotenberg binary from the binary stage.
+COPY --from=binary-stage /home/gotenberg /usr/bin/
 
 # Environment variables required by modules or else.
-ENV GC_EXCLUDE_SUBSTR "hsperfdata_root,hsperfdata_gotenberg"
 ENV CHROMIUM_BIN_PATH /usr/bin/chromium
-ENV UNOCONV_BIN_PATH /usr/bin/unoconv
 ENV LIBREOFFICE_BIN_PATH /usr/lib/libreoffice/program/soffice.bin
+ENV UNOCONVERTER_BIN_PATH /usr/bin/unoconverter
 ENV PDFTK_BIN_PATH /usr/bin/pdftk
 ENV QPDF_BIN_PATH /usr/bin/qpdf
 
