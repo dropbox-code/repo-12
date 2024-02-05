@@ -22,6 +22,7 @@ import (
 
 type libreOffice interface {
 	gotenberg.Process
+	html(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
 	pdf(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
 }
 
@@ -338,8 +339,6 @@ func (p *libreOfficeProcess) pdf(ctx context.Context, logger *zap.Logger, inputP
 	return fmt.Errorf("convert to PDF: %w", err)
 }
 
-
-
 func (p *libreOfficeProcess) html(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
 	if !p.isStarted.Load() {
 		return errors.New("LibreOffice not started, cannot handle HTML conversion")
@@ -381,7 +380,7 @@ func (p *libreOfficeProcess) html(ctx context.Context, logger *zap.Logger, input
 
 	exitCode, err := cmd.Exec()
 	if err == nil {
-		replaceHtmlImageWithEmbeddedBase64(outputPath)
+		replaceHtmlImageWithEmbeddedBase64(outputPath, logger)
 		return nil
 	}
 
@@ -402,7 +401,7 @@ func (p *libreOfficeProcess) html(ctx context.Context, logger *zap.Logger, input
 	return fmt.Errorf("convert to PDF: %w", err)
 }
 
-func replaceHtmlImageWithEmbeddedBase64(outputPath string) error {
+func replaceHtmlImageWithEmbeddedBase64(outputPath string, logger *zap.Logger) error {
 	raw, err := os.ReadFile(outputPath)
 	html := string(raw)
 	if err != nil {
@@ -428,7 +427,9 @@ func replaceHtmlImageWithEmbeddedBase64(outputPath string) error {
 	if err == nil {
 		logger.Info("Wrote the embedded version of the html file")
 		_ = os.Rename(outputPath+".embedded", outputPath)
+		return nil
 	}
+	return err
 }
 
 // LibreOffice cannot convert a file with a name containing non-basic Latin
