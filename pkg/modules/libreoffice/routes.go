@@ -61,7 +61,7 @@ func convertRoute(libreOffice libreofficeapi.Uno, engine gotenberg.PdfEngine) ap
 			}
 
 			// If HTML format is requested, and either native formats or PDFUA is requested, return an error.
-			if htmlFormat && (nativePdfFormats || pdfua) {
+			if htmlFormat && (pdfa != "" || pdfua) {
 				return api.WrapError(
 					errors.New("got both 'htmlFormat' and 'nativePdfFormats' form fields"),
 					api.NewSentinelHttpError(http.StatusBadRequest, "Both 'htmlFormat' and 'nativePdfFormats' form fields are provided"),

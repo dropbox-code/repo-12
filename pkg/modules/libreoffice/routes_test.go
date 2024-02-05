@@ -677,15 +677,15 @@ func TestConvertRoute(t *testing.T) {
 			expectOutputPathsCount: 0,
 		},
 		{
-			scenario: "invalid form data: htmlFormat and nativePdfFormats set",
+			scenario: "invalid form data: htmlFormat and pdfa set",
 			ctx: func() *api.ContextMock {
 				ctx := &api.ContextMock{Context: new(api.Context)}
 				ctx.SetFiles(map[string]string{
 					"document.docx":  "/document.docx",
 				})
 				ctx.SetValues(map[string][]string{
-					"nativePdfFormats": {
-						"true",
+					"pdfa": {
+						"1",
 					},
 					"htmlFormat": {
 						"true",
