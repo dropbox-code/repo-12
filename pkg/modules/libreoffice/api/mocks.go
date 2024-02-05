@@ -11,11 +11,16 @@ import (
 // ApiMock is a mock for the [Uno] interface.
 type ApiMock struct {
 	PdfMock        func(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
+	HtmlMock	   func(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
 	ExtensionsMock func() []string
 }
 
 func (api *ApiMock) Pdf(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
 	return api.PdfMock(ctx, logger, inputPath, outputPath, options)
+}
+
+func (api *ApiMock) Html(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
+	return api.HtmlMock(ctx, logger, inputPath, outputPath, options)
 }
 
 func (api *ApiMock) Extensions() []string {
@@ -35,10 +40,15 @@ func (provider *ProviderMock) LibreOffice() (Uno, error) {
 type libreOfficeMock struct {
 	gotenberg.ProcessMock
 	pdfMock func(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
+	htmlMock func(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
 }
 
 func (b *libreOfficeMock) pdf(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
 	return b.pdfMock(ctx, logger, inputPath, outputPath, options)
+}
+
+func (b *libreOfficeMock) html(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
+	return b.htmlMock(ctx, logger, inputPath, outputPath, options)
 }
 
 // Interface guards.

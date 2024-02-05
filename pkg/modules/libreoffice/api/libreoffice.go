@@ -2,12 +2,15 @@ package api
 
 import (
 	"context"
+	b64 "encoding/base64"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -20,6 +23,7 @@ import (
 
 type libreOffice interface {
 	gotenberg.Process
+	html(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
 	pdf(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
 }
 
@@ -260,6 +264,13 @@ func (p *libreOfficeProcess) pdf(ctx context.Context, logger *zap.Logger, inputP
 
 	args = append(args, "--port", fmt.Sprintf("%d", p.socketPort))
 
+	if options.ImportFilter != "" {
+		args = append(args, "--import-filter-name", options.ImportFilter)
+	}
+	if options.ImportOptions != "" {
+		args = append(args, "--import", options.ImportOptions)
+	}
+
 	checkedEntry := logger.Check(zap.DebugLevel, "check for debug level before setting high verbosity")
 	if checkedEntry != nil {
 		args = append(args, "-vvv")
@@ -327,6 +338,100 @@ func (p *libreOfficeProcess) pdf(ctx context.Context, logger *zap.Logger, inputP
 	// of its temporary files, as it has been killed without warning. The
 	// garbage collector will delete them for us (if the module is loaded).
 	return fmt.Errorf("convert to PDF: %w", err)
+}
+
+func (p *libreOfficeProcess) html(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
+	if !p.isStarted.Load() {
+		return errors.New("LibreOffice not started, cannot handle HTML conversion")
+	}
+
+	args := []string{
+		"--no-launch",
+		"--format",
+		"html",
+	}
+
+	args = append(args, "--port", fmt.Sprintf("%d", p.socketPort))
+
+	if options.ImportFilter != "" {
+		args = append(args, "--import-filter-name", options.ImportFilter)
+	}
+	if options.ImportOptions != "" {
+		args = append(args, "--import", options.ImportOptions)
+	}
+
+	checkedEntry := logger.Check(zap.DebugLevel, "check for debug level before setting high verbosity")
+	if checkedEntry != nil {
+		args = append(args, "-vvv")
+	}
+
+	inputPath, err := nonBasicLatinCharactersGuard(logger, inputPath)
+	if err != nil {
+		return fmt.Errorf("non-basic latin characters guard: %w", err)
+	}
+
+	args = append(args, "--output", outputPath, inputPath)
+
+	cmd, err := gotenberg.CommandContext(ctx, logger, p.arguments.unoBinPath, args...)
+	if err != nil {
+		return fmt.Errorf("create uno command: %w", err)
+	}
+
+	logger.Debug(fmt.Sprintf("print to PDF with: %+v", options))
+
+	exitCode, err := cmd.Exec()
+	if err == nil {
+		replaceHtmlImageWithEmbeddedBase64(outputPath, logger)
+		return nil
+	}
+
+	// LibreOffice's errors are not explicit.
+	// That's why we have to make an educated guess according to the exit code
+	// and given inputs.
+	if exitCode == 5 && options.PageRanges != "" {
+		return ErrMalformedPageRanges
+	}
+
+	// Possible errors:
+	// 1. LibreOffice failed for some reason.
+	// 2. Context done.
+	//
+	// On the second scenario, LibreOffice might not have time to remove some
+	// of its temporary files, as it has been killed without warning. The
+	// garbage collector will delete them for us (if the module is loaded).
+	return fmt.Errorf("convert to PDF: %w", err)
+}
+
+// ** Onna Custom base64 image inlining for HTML conversions **
+func replaceHtmlImageWithEmbeddedBase64(outputPath string, logger *zap.Logger) error {
+	raw, err := os.ReadFile(outputPath)
+	html := string(raw)
+	if err != nil {
+		logger.Error("Unable to read output html file at " + outputPath)
+		return nil
+	}
+	imgRe := regexp.MustCompile(`img\s+src="([^/"]+)"`)
+	matches := imgRe.FindAllStringSubmatch(html, -1)
+	for _, value := range matches {
+		fullPath := filepath.Join(filepath.Dir(outputPath), value[1])
+		if _, err := os.Stat(fullPath); err == nil {
+			logger.Info("Found an image to embed: " + fullPath)
+			imageData, err := os.ReadFile(fullPath)
+			if err == nil {
+				encoded := b64.StdEncoding.EncodeToString(imageData)
+				html = imgRe.ReplaceAllString(html, "img src=\"data:image/"+ filepath.Ext(value[1])+";base64,"+encoded + "\"")
+				logger.Info("Embedded the image that was in: " + value[1])
+			}
+		}
+	}
+	// Rewrite output file with the modified document.
+	err = ioutil.WriteFile(outputPath+".embedded", []byte(html), 0644)
+	if err == nil {
+		logger.Info("Wrote the embedded version of the html file")
+		_ = os.Rename(outputPath+".embedded", outputPath)
+		return nil
+	}
+	return err
 }
 
 // LibreOffice cannot convert a file with a name containing non-basic Latin

@@ -54,11 +54,22 @@ type Options struct {
 	// PDF/A-3b and PDF/UA.
 	// Optional.
 	PdfFormats gotenberg.PdfFormats
+
+	// Optionally generate HTML output, particularly useful for rendering
+	// spreadsheets with many columns.
+	HTMLformat bool
+
+	// Optionally set the import filter to use.
+	ImportFilter string
+
+	// Optionally add import filter options.
+	ImportOptions string
 }
 
 // Uno is an abstraction on top of the Universal Network Objects API.
 type Uno interface {
 	Pdf(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
+	Html(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error
 	Extensions() []string
 }
 
@@ -258,6 +269,13 @@ func (a *Api) LibreOffice() (Uno, error) {
 func (a *Api) Pdf(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
 	return a.supervisor.Run(ctx, logger, func() error {
 		return a.libreOffice.pdf(ctx, logger, inputPath, outputPath, options)
+	})
+}
+
+// Html converts a document to PDF.
+func (a *Api) Html(ctx context.Context, logger *zap.Logger, inputPath, outputPath string, options Options) error {
+	return a.supervisor.Run(ctx, logger, func() error {
+		return a.libreOffice.html(ctx, logger, inputPath, outputPath, options)
 	})
 }
 
