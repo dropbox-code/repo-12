@@ -56,7 +56,7 @@ func convertRoute(libreOffice libreofficeapi.Uno, engine gotenberg.PdfEngine) ap
 			if htmlFormat && merge && len(inputPaths) > 1 {
 				return api.WrapError(
 					errors.New("unable to merge multiple files with htmlFormat"),
-					api.NewSentinelHTTPError(http.StatusBadRequest, "Unable to merge multiple files using htmlFormat"),
+					api.NewSentinelHttpError(http.StatusBadRequest, "Unable to merge multiple files using htmlFormat"),
 				)
 			}
 
@@ -64,7 +64,7 @@ func convertRoute(libreOffice libreofficeapi.Uno, engine gotenberg.PdfEngine) ap
 			if htmlFormat && (nativePdfFormats || pdfua) {
 				return api.WrapError(
 					errors.New("got both 'htmlFormat' and 'nativePdfFormats' form fields"),
-					api.NewSentinelHTTPError(http.StatusBadRequest, "Both 'htmlFormat' and 'nativePdfFormats' form fields are provided"),
+					api.NewSentinelHttpError(http.StatusBadRequest, "Both 'htmlFormat' and 'nativePdfFormats' form fields are provided"),
 				)
 			}
 
@@ -72,7 +72,7 @@ func convertRoute(libreOffice libreofficeapi.Uno, engine gotenberg.PdfEngine) ap
 			if htmlFormat && nativePageRanges != "" {
 				return api.WrapError(
 					errors.New("got both 'htmlFormat' and 'nativePageRanges' form fields"),
-					api.NewSentinelHTTPError(http.StatusBadRequest, "Both 'htmlFormat' and 'nativePageRanges' form fields are provided"),
+					api.NewSentinelHttpError(http.StatusBadRequest, "Both 'htmlFormat' and 'nativePageRanges' form fields are provided"),
 				)
 			}
 
