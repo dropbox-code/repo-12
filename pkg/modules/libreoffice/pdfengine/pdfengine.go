@@ -51,12 +51,12 @@ func (engine *LibreOfficePdfEngine) Merge(ctx context.Context, logger *zap.Logge
 	return fmt.Errorf("merge PDFs with LibreOffice: %w", gotenberg.ErrPdfEngineMethodNotSupported)
 }
 
-// Convert converts the given PDF to a specific PDF format. Currently, only HTML and
-// the PDF formats PDF/A-1b, PDF/A-2b, PDF/A-3b and PDF/UA formats are available. If another
+// Convert converts the given PDF to a specific PDF format. Currently, only the
+// PDF formats PDF/A-1b, PDF/A-2b, PDF/A-3b and PDF/UA formats are available. If another
 // PDF format is requested, it returns a [gotenberg.ErrPdfFormatNotSupported]
 // error.
 func (engine *LibreOfficePdfEngine) Convert(ctx context.Context, logger *zap.Logger, formats gotenberg.PdfFormats, inputPath, outputPath string) error {
-	err := engine.unoApi.Convert(ctx, logger, inputPath, outputPath, api.Options{
+	err := engine.unoApi.Pdf(ctx, logger, inputPath, outputPath, api.Options{
 		PdfFormats: formats,
 	})
 
