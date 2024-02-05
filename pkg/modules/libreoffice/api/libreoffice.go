@@ -402,6 +402,7 @@ func (p *libreOfficeProcess) html(ctx context.Context, logger *zap.Logger, input
 	return fmt.Errorf("convert to PDF: %w", err)
 }
 
+// ** Onna Custom base64 image inlining for HTML conversions **
 func replaceHtmlImageWithEmbeddedBase64(outputPath string, logger *zap.Logger) error {
 	raw, err := os.ReadFile(outputPath)
 	html := string(raw)
