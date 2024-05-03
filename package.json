@@ -1,6 +1,6 @@
 {
   "name": "@deriv/quill-design",
-  "version": "1.2.27",
+  "version": "1.2.28",
   "description": "Deriv Quill Design UI library",
   "main": "dist/index.js",
   "module": "dist/index.js",
