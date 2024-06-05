@@ -1,3 +1,10 @@
+## [1.2.29](https://github.com/deriv-com/quill-design/compare/v1.2.28...v1.2.29) (2024-06-05)
+
+
+### ♻️ 	 Chores
+
+* add dependabot ([#161](https://github.com/deriv-com/quill-design/issues/161)) ([468937f](https://github.com/deriv-com/quill-design/commit/468937fce5ff69d0f3bc741dbce917ecb44da1ee))
+
 ## [1.2.28](https://github.com/deriv-com/quill-design/compare/v1.2.27...v1.2.28) (2024-05-03)
 
 
