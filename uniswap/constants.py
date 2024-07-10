@@ -56,7 +56,9 @@ _factory_contract_addresses_v2 = {
     # SushiSwap on Harmony
     "harmony_mainnet": "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
     "harmony_testnet": "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
-    "sepolia": "0x7E0987E5b3a30e3f2828572Bb659A548460a3003"
+    "sepolia": "0x7E0987E5b3a30e3f2828572Bb659A548460a3003",
+    # basenet only
+    "basenet" :"0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6"
 }
 
 _router_contract_addresses_v2 = {
@@ -72,6 +74,8 @@ _router_contract_addresses_v2 = {
     "harmony_testnet": "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
     #sepolia tesnet router address
     "sepolia": "0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008",
+    # basenet only
+    "basenet" : "0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24"
 }
 
 MAX_UINT_128 = (2**128) - 1
