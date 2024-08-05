@@ -4,3 +4,6 @@ node_modules
 coverage
 .DS_Store
 build-storybook.log
+.env
+.env.*
+*.env
