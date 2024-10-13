@@ -507,7 +507,7 @@ jobs:
         python-version: '3.10'
     - continue-on-error: true
       name: Get coverage files
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: coverage
         path: coverage
