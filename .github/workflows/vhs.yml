@@ -290,13 +290,13 @@ jobs:
       name: Install Dependencies
       run: pnpm i
     - continue-on-error: true
-      uses: charmbracelet/vhs-action@v1
+      uses: charmbracelet/vhs-action@v2
       with:
         path: packages/cli/vhs/init.tape
     - continue-on-error: true
       env:
         ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-      uses: charmbracelet/vhs-action@v1
+      uses: charmbracelet/vhs-action@v2
       with:
         path: packages/cli/vhs/generate.tape
     - continue-on-error: true
