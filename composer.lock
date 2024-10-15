@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "595a21dda8d9c0943a32df05723b0e28",
+    "content-hash": "9de82a474dc4a8542d0d122f09541587",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -938,13 +938,6 @@
                 "reference": "81d809a476e87c260492d4cc0413818d85e123cc",
                 "shasum": ""
             },
-            "archive": {
-                "exclude": [
-                    "!/build",
-                    "*.zip",
-                    "node_modules"
-                ]
-            },
             "require": {
                 "composer/installers": "~1.2",
                 "php": "^7.1"
@@ -958,6 +951,13 @@
             "type": "wordpress-plugin",
             "extra": {
                 "phpcodesniffer-search-depth": 2
+            },
+            "archive": {
+                "exclude": [
+                    "!/build",
+                    "*.zip",
+                    "node_modules"
+                ]
             },
             "scripts": {
                 "phpcs": [
@@ -6707,16 +6707,16 @@
         },
         {
             "name": "woocommerce/qit-cli",
-            "version": "0.4.0",
+            "version": "0.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/qit-cli.git",
-                "reference": "8c71a1ffd67879d43bde45512bb7fe3ff399814b"
+                "reference": "56421f4c36750cc0166f73cc18d039bfb4efc8eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/8c71a1ffd67879d43bde45512bb7fe3ff399814b",
-                "reference": "8c71a1ffd67879d43bde45512bb7fe3ff399814b",
+                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/56421f4c36750cc0166f73cc18d039bfb4efc8eb",
+                "reference": "56421f4c36750cc0166f73cc18d039bfb4efc8eb",
                 "shasum": ""
             },
             "require": {
@@ -6734,9 +6734,9 @@
             "description": "A command line interface for WooCommerce Quality Insights Toolkit (QIT).",
             "support": {
                 "issues": "https://github.com/woocommerce/qit-cli/issues",
-                "source": "https://github.com/woocommerce/qit-cli/tree/0.4.0"
+                "source": "https://github.com/woocommerce/qit-cli/tree/0.6.0"
             },
-            "time": "2024-01-29T16:27:45+00:00"
+            "time": "2024-09-18T17:03:11+00:00"
         },
         {
             "name": "woocommerce/woocommerce-sniffs",
@@ -6976,5 +6976,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.6.0"
 }
