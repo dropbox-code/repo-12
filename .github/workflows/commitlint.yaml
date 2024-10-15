@@ -249,7 +249,7 @@ jobs:
       with:
         fetch-depth: 0
     - continue-on-error: true
-      uses: wagoid/commitlint-github-action@v4
+      uses: wagoid/commitlint-github-action@v6
       with:
         configFile: .github/.commitlintrc
     - name: after
