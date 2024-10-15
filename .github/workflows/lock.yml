@@ -245,7 +245,7 @@ jobs:
 
         sudo sh -c ''echo 1 > /proc/sys/net/ipv4/ip_forward'''
     - continue-on-error: true
-      uses: dessant/lock-threads@v4
+      uses: dessant/lock-threads@v5
       with:
         issue-lock-comment: 'This issue has been automatically locked since there
           has not been any recent activity after it was closed. Please open a new
