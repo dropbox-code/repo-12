@@ -253,7 +253,7 @@ jobs:
         fetch-depth: 50
     - continue-on-error: true
       name: Setup Bazel
-      uses: p0deje/setup-bazel@0.2.0
+      uses: p0deje/setup-bazel@0.9.0
       with:
         bazelisk-cache: true
         external-cache: "name: should-workflow-run\nmanifest:\n  crates: rust/Cargo.Bazel.lock\n\
