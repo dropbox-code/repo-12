@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "595a21dda8d9c0943a32df05723b0e28",
+    "content-hash": "44bc90f79ba106418337be651dfe8d91",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -938,13 +938,6 @@
                 "reference": "81d809a476e87c260492d4cc0413818d85e123cc",
                 "shasum": ""
             },
-            "archive": {
-                "exclude": [
-                    "!/build",
-                    "*.zip",
-                    "node_modules"
-                ]
-            },
             "require": {
                 "composer/installers": "~1.2",
                 "php": "^7.1"
@@ -958,6 +951,13 @@
             "type": "wordpress-plugin",
             "extra": {
                 "phpcodesniffer-search-depth": 2
+            },
+            "archive": {
+                "exclude": [
+                    "!/build",
+                    "*.zip",
+                    "node_modules"
+                ]
             },
             "scripts": {
                 "phpcs": [
@@ -1831,16 +1831,16 @@
         },
         {
             "name": "dg/bypass-finals",
-            "version": "v1.5.1",
+            "version": "v1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dg/bypass-finals.git",
-                "reference": "12ef25e1f8d4144e4ec80d13a28895e8942f4104"
+                "reference": "86b00f0d900c7e15d3341e687e0df89e8c2d4632"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dg/bypass-finals/zipball/12ef25e1f8d4144e4ec80d13a28895e8942f4104",
-                "reference": "12ef25e1f8d4144e4ec80d13a28895e8942f4104",
+                "url": "https://api.github.com/repos/dg/bypass-finals/zipball/86b00f0d900c7e15d3341e687e0df89e8c2d4632",
+                "reference": "86b00f0d900c7e15d3341e687e0df89e8c2d4632",
                 "shasum": ""
             },
             "require": {
@@ -1859,8 +1859,8 @@
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause",
-                "GPL-2.0",
-                "GPL-3.0"
+                "GPL-2.0-only",
+                "GPL-3.0-only"
             ],
             "authors": [
                 {
@@ -1878,9 +1878,9 @@
             ],
             "support": {
                 "issues": "https://github.com/dg/bypass-finals/issues",
-                "source": "https://github.com/dg/bypass-finals/tree/v1.5.1"
+                "source": "https://github.com/dg/bypass-finals/tree/v1.8.0"
             },
-            "time": "2023-09-16T09:13:54+00:00"
+            "time": "2024-07-02T22:24:43+00:00"
         },
         {
             "name": "dnoegel/php-xdg-base-dir",
@@ -6976,5 +6976,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.6.0"
 }
