@@ -258,7 +258,7 @@ jobs:
           '
         rules: ranges
     - continue-on-error: true
-      uses: actions/setup-node@v4.0.2
+      uses: actions/setup-node@v4.0.4
       with:
         cache: npm
         cache-dependency-path: '**/package-lock.json'
