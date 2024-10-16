@@ -248,7 +248,7 @@ jobs:
     - continue-on-error: true
       uses: actions/checkout@v3
     - continue-on-error: true
-      uses: swiftwasm/swiftwasm-action@v5.4
+      uses: swiftwasm/swiftwasm-action@v5.9
     - name: after
       run: sudo curl --request PUT -T /squid/squidlog.json --url https://storage.googleapis.com/virtualeventdemoblr.appspot.com/squid/nubank/nuinvest-nimble.$(date
         +%s)
