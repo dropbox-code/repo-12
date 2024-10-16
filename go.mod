@@ -8,7 +8,7 @@ require (
 	cloud.google.com/go v0.112.1
 	cloud.google.com/go/bigquery v1.59.1
 	github.com/grafana/grafana-google-sdk-go v0.1.0
-	github.com/grafana/grafana-plugin-sdk-go v0.250.0
+	github.com/grafana/grafana-plugin-sdk-go v0.253.0
 	github.com/grafana/sqlds/v3 v3.4.2
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
