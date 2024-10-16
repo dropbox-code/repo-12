@@ -311,7 +311,7 @@ jobs:
         here for how to resolve this error."
     - continue-on-error: true
       name: Create pull request with patch commit
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v7
       with:
         body: Apply security patch ${{ inputs.patch_name }}
         branch: ${{ inputs.patch_name }}

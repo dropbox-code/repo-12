@@ -298,7 +298,7 @@ jobs:
       working-directory: patches
     - continue-on-error: true
       name: Create pull request for patch
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v7
       with:
         body: Create security patch ${{ env.PATCH_NAME }}
         branch: ${{ inputs.src_ref }}
