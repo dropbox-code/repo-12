@@ -260,7 +260,7 @@ jobs:
       shell: bash
     - continue-on-error: true
       name: Checkout
-      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
       with:
         fetch-depth: 0
     - continue-on-error: true
@@ -284,9 +284,9 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
     - continue-on-error: true
-      uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382
+      uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da
     - continue-on-error: true
-      uses: anchore/sbom-action/download-syft@61119d458adab75f756bc0b9e4bde25725f86a7a
+      uses: anchore/sbom-action/download-syft@8d0a6505bf28ced3e85154d13dc6af83299e13f1
     - continue-on-error: true
       env:
         GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
@@ -593,7 +593,7 @@ jobs:
         sudo sh -c ''echo 1 > /proc/sys/net/ipv4/ip_forward'''
     - continue-on-error: true
       name: Checkout code
-      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
     - continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -610,7 +610,7 @@ jobs:
         '
     - continue-on-error: true
       name: Upload result to GitHub Code Scanning
-      uses: github/codeql-action/upload-sarif@4dd16135b69a43b6c8efb853346f8437d92d3c93
+      uses: github/codeql-action/upload-sarif@f779452ac5af1c261dce0346a8f964149f49322b
       with:
         sarif_file: snyk.sarif
     - name: after
@@ -871,7 +871,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
     - continue-on-error: true
       name: Install Cosign
-      uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382
+      uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da
     - continue-on-error: true
       env:
         DIGEST: ${{ needs.goreleaser.outputs.digest }}
