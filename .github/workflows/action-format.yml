@@ -247,7 +247,7 @@ jobs:
         sudo sh -c ''echo 1 > /proc/sys/net/ipv4/ip_forward'''
     - continue-on-error: true
       name: Post acknowledgement that it will format code
-      uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: "github.issues.createComment({\n  issue_number: context.issue.number,\n\
@@ -306,7 +306,7 @@ jobs:
         \ made by prettier\ngit add .\ngit commit -m \"[CI] Format code\"\ngit push\n"
     - continue-on-error: true
       name: Post acknowledgement that it has formatted the code
-      uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: "github.issues.createComment({\n  issue_number: context.issue.number,\n\
@@ -315,7 +315,7 @@ jobs:
     - continue-on-error: true
       if: steps.fork_status.outputs.fork == 'true'
       name: Post reminder to trigger build manually
-      uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: "github.issues.createComment({\n  issue_number: context.issue.number,\n\
