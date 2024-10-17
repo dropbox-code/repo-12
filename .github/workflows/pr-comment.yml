@@ -245,7 +245,7 @@ jobs:
 
         sudo sh -c ''echo 1 > /proc/sys/net/ipv4/ip_forward'''
     - continue-on-error: true
-      uses: exercism/pr-commenter-action@3706a61d7c6cf1a77db576b9a4c0e7046ae78f1a
+      uses: exercism/pr-commenter-action@085ef62d2a541a112c3ade1d24deea83665ea186
       with:
         config-file: .github/pr-commenter.yml
         github-token: ${{ github.token }}
